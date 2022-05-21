@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer } from "react"
+import React, { useState, useEffect, useReducer, useRef, useCallback } from "react"
 import styled from "styled-components"
 import Button from "@material-ui/core/ButtonBase"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -37,54 +37,61 @@ enum studentActionFieldsEnum {
   descendingOrder = "descendingOrder",
   sort = "sort",
   roll = "roll",
+  search = "search",
 }
+
 const reducerFn = (state: StudentStateModel = _initStudentState, action: SortActionModel): StudentStateModel => {
   if (action.type === studentActionFieldsEnum.addStudents) return { students: action.students, sortOrder: action.sortOrder, fieldName: action.fieldName }
-  if (action.type === studentActionFieldsEnum.sort) {
-    if (action.fieldName === studentActionFieldsEnum.firstName && action.sortOrder === studentActionFieldsEnum.descendingOrder)
-      return { students: action.students, sortOrder: studentActionFieldsEnum.descendingOrder, fieldName: studentActionFieldsEnum.firstName }
-    if (action.fieldName === studentActionFieldsEnum.firstName && action.sortOrder === studentActionFieldsEnum.ascendingOrder)
-      return { students: action.students, sortOrder: studentActionFieldsEnum.ascendingOrder, fieldName: studentActionFieldsEnum.firstName }
-    if (action.fieldName === studentActionFieldsEnum.lastName && action.sortOrder === studentActionFieldsEnum.descendingOrder)
-      return { students: action.students, sortOrder: studentActionFieldsEnum.descendingOrder, fieldName: studentActionFieldsEnum.firstName }
-    if (action.fieldName === studentActionFieldsEnum.lastName && action.sortOrder === studentActionFieldsEnum.ascendingOrder)
-      return { students: action.students, sortOrder: studentActionFieldsEnum.ascendingOrder, fieldName: studentActionFieldsEnum.lastName }
-  }
-  return _initStudentState
+  if (action.type === studentActionFieldsEnum.sort) return { students: action.students, sortOrder: action.sortOrder, fieldName: action.fieldName }
+  if (action.type === studentActionFieldsEnum.search) return { students: action.students, sortOrder: action.sortOrder, fieldName: action.fieldName }
+
+  return state
 }
 
 export const HomeBoardPage: React.FC = () => {
+  let students: Person[] = []
   const [studentState, dispatcherFn] = useReducer(reducerFn, _initStudentState)
   const [isRollMode, setIsRollMode] = useState(false)
-  const [getStudents, data, loadState] = useApi<{ students: Person[] }>({ url: "get-homeboard-students" })
+  const [getStudents, data, loadState] = useApi<{ success: boolean; students: Person[] }>({ url: "get-homeboard-students" })
 
   useEffect(() => {
     void getStudents()
   }, [getStudents])
 
   useEffect(() => {
-    if (data && data?.students)
+    if (data && data.success) {
+      students = data?.students ? data?.students : []
       dispatcherFn({
         type: studentActionFieldsEnum.addStudents,
-        students: data?.students ? data?.students : [],
+        students: students,
         fieldName: "",
         sortOrder: "",
       })
-  }, [data?.students])
+    }
+  }, [data?.success])
 
-  const onToolbarAction = (action: ToolbarAction) => {
+  const onToolbarAction = useCallback((action: ToolbarAction) => {
     if (action.type === studentActionFieldsEnum.roll) {
       setIsRollMode(true)
     }
     if (action.type === studentActionFieldsEnum.sort) {
       dispatcherFn({
         type: studentActionFieldsEnum.sort,
-        fieldName: action.field,
-        sortOrder: action.order,
-        students: sortStudentsByFieldName(action.field, action.order),
+        fieldName: action.payload.field,
+        sortOrder: action.payload.order,
+        students: filterStudentData(action),
       })
     }
-  }
+
+    if (action.type === studentActionFieldsEnum.search) {
+      dispatcherFn({
+        type: studentActionFieldsEnum.search,
+        fieldName: action.payload.field,
+        sortOrder: action.payload.order,
+        students: filterStudentData(action),
+      })
+    }
+  }, [])
 
   const onActiveRollAction = (action: ActiveRollAction) => {
     if (action === "exit") {
@@ -92,8 +99,23 @@ export const HomeBoardPage: React.FC = () => {
     }
   }
 
+  const filterStudentData = (action: ToolbarAction) => {
+    let sortedData = students
+    if (action.payload.field != "") sortedData = sortStudentsByFieldName(action.payload.field, action.payload.order)
+    return action.payload.searchText
+      ? sortedData.filter((student: Person) => {
+          return student.first_name.toLowerCase().includes(action.payload.searchText.toLowerCase()) || 
+          student.last_name.toLowerCase().includes(action.payload.searchText.toLowerCase())
+        })
+      : sortedData
+  }
+
   const sortStudentsByFieldName = (fieldName: string, sortOrder: string) => {
-    return fieldName === studentActionFieldsEnum.firstName ? sortStudentsByFirstName(sortOrder) : sortStudentByLastName(sortOrder)
+    return fieldName === studentActionFieldsEnum.firstName
+      ? sortStudentsByFirstName(sortOrder)
+      : fieldName === studentActionFieldsEnum.lastName
+      ? sortStudentByLastName(sortOrder)
+      : studentState.students
   }
 
   const sortStudentsByFirstName = (sortOrder: string) => {
@@ -176,17 +198,38 @@ export const HomeBoardPage: React.FC = () => {
 
 interface ToolbarAction {
   type: string
-  field: string
-  order: string
+  payload: {
+    field: string
+    order: string
+    searchText: string
+  }
 }
 interface ToolbarProps {
-  onItemClick: (action: ToolbarAction, value?: string) => void
+  onItemClick: (action: ToolbarAction) => void
 }
 const Toolbar: React.FC<ToolbarProps> = (props) => {
   const { onItemClick } = props
-
+  const [searchValue, setSearchValue] = useState("")
+  const [sortFieldName, setSortFieldName] = useState("")
   const [firstNameSortOrder, setFirstNameSortOrder] = useState("")
-  const [lastNameNameSortOrder, setLastNameSortOrder] = useState("")
+  const [lastNameSortOrder, setLastNameSortOrder] = useState("")
+
+  useEffect(() => {
+    let timer = setTimeout(() => {
+        onItemClick({
+          type: studentActionFieldsEnum.search,
+          payload: {
+            field: sortFieldName,
+            order: sortFieldName === studentActionFieldsEnum.firstName ? firstNameSortOrder : sortFieldName === studentActionFieldsEnum.lastName ? lastNameSortOrder : "",
+            searchText: searchValue,
+          },
+        })
+    }, 1000)
+
+    return () => {
+      clearInterval(timer)
+    }
+  }, [searchValue, onItemClick])
 
   const sortData = (fieldName: string) => {
     if (fieldName === studentActionFieldsEnum.firstName) {
@@ -198,24 +241,39 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
           : studentActionFieldsEnum.ascendingOrder
       onItemClick({
         type: studentActionFieldsEnum.sort,
-        field: fieldName,
-        order: order,
+        payload: {
+          field: fieldName,
+          order: order,
+          searchText: searchValue,
+        },
       })
       setFirstNameSortOrder(order)
+      setLastNameSortOrder("")
     } else {
       let order =
-        lastNameNameSortOrder === ""
+        lastNameSortOrder === ""
           ? studentActionFieldsEnum.ascendingOrder
-          : lastNameNameSortOrder === studentActionFieldsEnum.ascendingOrder
+          : lastNameSortOrder === studentActionFieldsEnum.ascendingOrder
           ? studentActionFieldsEnum.descendingOrder
           : studentActionFieldsEnum.ascendingOrder
       onItemClick({
         type: studentActionFieldsEnum.sort,
-        field: fieldName,
-        order: order,
+        payload: {
+          field: fieldName,
+          order: order,
+          searchText: searchValue,
+        },
       })
       setLastNameSortOrder(order)
+      setFirstNameSortOrder("")
     }
+    setSortFieldName(fieldName)
+  }
+
+  const searchChaneHandler = (event: any) => {
+    setSearchValue((prevState) => {
+      return event.target.value
+    })
   }
 
   return (
@@ -232,21 +290,26 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
       </S.Button>
       <S.Button onClick={() => sortData(studentActionFieldsEnum.lastName)}>
         <span>Last Name &nbsp;</span>
-        {lastNameNameSortOrder === studentActionFieldsEnum.ascendingOrder ? (
+        {lastNameSortOrder === studentActionFieldsEnum.ascendingOrder ? (
           <FontAwesomeIcon icon="sort-down" />
-        ) : lastNameNameSortOrder === studentActionFieldsEnum.descendingOrder ? (
+        ) : lastNameSortOrder === studentActionFieldsEnum.descendingOrder ? (
           <FontAwesomeIcon icon="sort-up" />
         ) : (
           ""
         )}
       </S.Button>
-      <div>Search</div>
+      <div>
+        <input type={"text"} placeholder="Search.." onChange={searchChaneHandler} />
+      </div>
       <S.Button
         onClick={() =>
           onItemClick({
             type: studentActionFieldsEnum.roll,
-            field: "",
-            order: "",
+            payload: {
+              field: sortFieldName,
+              order: sortFieldName === studentActionFieldsEnum.firstName ? firstNameSortOrder : sortFieldName === studentActionFieldsEnum.lastName ? lastNameSortOrder : "",
+              searchText: searchValue,
+            },
           })
         }
       >
@@ -279,5 +342,10 @@ const S = {
       font-weight: ${FontWeight.strong};
       border-radius: ${BorderRadius.default};
     }
+  `,
+  Input: styled.input`
+    display: flex;
+    border-radius: ${BorderRadius.default};
+    min-height: 20px;
   `,
 }
