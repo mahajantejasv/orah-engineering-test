@@ -36,19 +36,19 @@ enum studentActionFieldsEnum {
   ascendingOrder = "ascendingOrder",
   descendingOrder = "descendingOrder",
   sort = "sort",
-  roll = "roll"
+  roll = "roll",
 }
 const reducerFn = (state: StudentStateModel = _initStudentState, action: SortActionModel): StudentStateModel => {
-  if (action.type === studentActionFieldsEnum.addStudents.toString()) return { students: action.students, sortOrder: action.sortOrder, fieldName: action.fieldName }
-  if (action.type === studentActionFieldsEnum.sort.toString()) {
-    if (action.fieldName === studentActionFieldsEnum.firstName.toString() && action.sortOrder === studentActionFieldsEnum.descendingOrder.toString())
-      return { students: action.students, sortOrder: studentActionFieldsEnum.descendingOrder.toString(), fieldName: studentActionFieldsEnum.firstName.toString() }
-    if (action.fieldName === studentActionFieldsEnum.firstName.toString() && action.sortOrder === studentActionFieldsEnum.ascendingOrder.toString())
-      return { students: action.students, sortOrder: studentActionFieldsEnum.ascendingOrder.toString(), fieldName: studentActionFieldsEnum.firstName.toString() }
-    if (action.fieldName === studentActionFieldsEnum.lastName.toString() && action.sortOrder === studentActionFieldsEnum.descendingOrder.toString())
-      return { students: action.students, sortOrder: studentActionFieldsEnum.descendingOrder.toString(), fieldName: studentActionFieldsEnum.firstName.toString() }
-    if (action.fieldName === studentActionFieldsEnum.lastName.toString() && action.sortOrder === studentActionFieldsEnum.ascendingOrder.toString())
-      return { students: action.students, sortOrder: studentActionFieldsEnum.ascendingOrder.toString(), fieldName: studentActionFieldsEnum.lastName.toString() }
+  if (action.type === studentActionFieldsEnum.addStudents) return { students: action.students, sortOrder: action.sortOrder, fieldName: action.fieldName }
+  if (action.type === studentActionFieldsEnum.sort) {
+    if (action.fieldName === studentActionFieldsEnum.firstName && action.sortOrder === studentActionFieldsEnum.descendingOrder)
+      return { students: action.students, sortOrder: studentActionFieldsEnum.descendingOrder, fieldName: studentActionFieldsEnum.firstName }
+    if (action.fieldName === studentActionFieldsEnum.firstName && action.sortOrder === studentActionFieldsEnum.ascendingOrder)
+      return { students: action.students, sortOrder: studentActionFieldsEnum.ascendingOrder, fieldName: studentActionFieldsEnum.firstName }
+    if (action.fieldName === studentActionFieldsEnum.lastName && action.sortOrder === studentActionFieldsEnum.descendingOrder)
+      return { students: action.students, sortOrder: studentActionFieldsEnum.descendingOrder, fieldName: studentActionFieldsEnum.firstName }
+    if (action.fieldName === studentActionFieldsEnum.lastName && action.sortOrder === studentActionFieldsEnum.ascendingOrder)
+      return { students: action.students, sortOrder: studentActionFieldsEnum.ascendingOrder, fieldName: studentActionFieldsEnum.lastName }
   }
   return _initStudentState
 }
@@ -63,21 +63,22 @@ export const HomeBoardPage: React.FC = () => {
   }, [getStudents])
 
   useEffect(() => {
-    dispatcherFn({
-      type: studentActionFieldsEnum.addStudents.toString(),
-      students: data?.students ? data?.students : [],
-      fieldName: "",
-      sortOrder: "",
-    })
+    if (data && data?.students)
+      dispatcherFn({
+        type: studentActionFieldsEnum.addStudents,
+        students: data?.students ? data?.students : [],
+        fieldName: "",
+        sortOrder: "",
+      })
   }, [data?.students])
 
   const onToolbarAction = (action: ToolbarAction) => {
-    if (action.type === studentActionFieldsEnum.roll.toString()) {
+    if (action.type === studentActionFieldsEnum.roll) {
       setIsRollMode(true)
     }
-    if (action.type === studentActionFieldsEnum.sort.toString()) {
+    if (action.type === studentActionFieldsEnum.sort) {
       dispatcherFn({
-        type: studentActionFieldsEnum.sort.toString(),
+        type: studentActionFieldsEnum.sort,
         fieldName: action.field,
         sortOrder: action.order,
         students: sortStudentsByFieldName(action.field, action.order),
@@ -91,14 +92,12 @@ export const HomeBoardPage: React.FC = () => {
     }
   }
 
-  const sortStudentsByFieldName = (fieldName: string, sortOrder: string) => { 
-    return (fieldName === studentActionFieldsEnum.firstName.toString()) ?
-    sortStudentsByFirstName(sortOrder) : sortStudentByLastName(sortOrder) 
-
+  const sortStudentsByFieldName = (fieldName: string, sortOrder: string) => {
+    return fieldName === studentActionFieldsEnum.firstName ? sortStudentsByFirstName(sortOrder) : sortStudentByLastName(sortOrder)
   }
 
   const sortStudentsByFirstName = (sortOrder: string) => {
-    if (sortOrder === studentActionFieldsEnum.descendingOrder.toString()) {
+    if (sortOrder === studentActionFieldsEnum.descendingOrder) {
       return studentState.students.sort((a: Person, b: Person) => {
         if (a.first_name < b.first_name) {
           return 1
@@ -121,9 +120,8 @@ export const HomeBoardPage: React.FC = () => {
     }
   }
 
-  
   const sortStudentByLastName = (sortOrder: string) => {
-    if (sortOrder === studentActionFieldsEnum.descendingOrder.toString()) {
+    if (sortOrder === studentActionFieldsEnum.descendingOrder) {
       return studentState.students.sort((a: Person, b: Person) => {
         if (a.last_name < b.last_name) {
           return 1
@@ -186,22 +184,74 @@ interface ToolbarProps {
 }
 const Toolbar: React.FC<ToolbarProps> = (props) => {
   const { onItemClick } = props
+
+  const [firstNameSortOrder, setFirstNameSortOrder] = useState("")
+  const [lastNameNameSortOrder, setLastNameSortOrder] = useState("")
+
+  const sortData = (fieldName: string) => {
+    if (fieldName === studentActionFieldsEnum.firstName) {
+      let order =
+        firstNameSortOrder === ""
+          ? studentActionFieldsEnum.ascendingOrder
+          : firstNameSortOrder === studentActionFieldsEnum.ascendingOrder
+          ? studentActionFieldsEnum.descendingOrder
+          : studentActionFieldsEnum.ascendingOrder
+      onItemClick({
+        type: studentActionFieldsEnum.sort,
+        field: fieldName,
+        order: order,
+      })
+      setFirstNameSortOrder(order)
+    } else {
+      let order =
+        lastNameNameSortOrder === ""
+          ? studentActionFieldsEnum.ascendingOrder
+          : lastNameNameSortOrder === studentActionFieldsEnum.ascendingOrder
+          ? studentActionFieldsEnum.descendingOrder
+          : studentActionFieldsEnum.ascendingOrder
+      onItemClick({
+        type: studentActionFieldsEnum.sort,
+        field: fieldName,
+        order: order,
+      })
+      setLastNameSortOrder(order)
+    }
+  }
+
   return (
     <S.ToolbarContainer>
-      <S.Button onClick={() => onItemClick({ 
-        type: studentActionFieldsEnum.sort.toString(),
-        field: studentActionFieldsEnum.firstName.toString(), 
-        order: studentActionFieldsEnum.descendingOrder.toString() })}>First Name</S.Button>
-      <S.Button onClick={() => onItemClick({ 
-        type: studentActionFieldsEnum.sort.toString(),
-        field: studentActionFieldsEnum.lastName.toString(), 
-        order: studentActionFieldsEnum.descendingOrder.toString() })}>Last Name</S.Button>
+      <S.Button onClick={() => sortData(studentActionFieldsEnum.firstName)}>
+        <span>First Name &nbsp;</span>
+        {firstNameSortOrder === studentActionFieldsEnum.ascendingOrder ? (
+          <FontAwesomeIcon icon="sort-down" />
+        ) : firstNameSortOrder === studentActionFieldsEnum.descendingOrder ? (
+          <FontAwesomeIcon icon="sort-up" />
+        ) : (
+          ""
+        )}
+      </S.Button>
+      <S.Button onClick={() => sortData(studentActionFieldsEnum.lastName)}>
+        <span>Last Name &nbsp;</span>
+        {lastNameNameSortOrder === studentActionFieldsEnum.ascendingOrder ? (
+          <FontAwesomeIcon icon="sort-down" />
+        ) : lastNameNameSortOrder === studentActionFieldsEnum.descendingOrder ? (
+          <FontAwesomeIcon icon="sort-up" />
+        ) : (
+          ""
+        )}
+      </S.Button>
       <div>Search</div>
-      <S.Button onClick={() => onItemClick({ 
-        type: studentActionFieldsEnum.roll.toString(),
-        field: "", 
-        order: ""
-       })}>Start Roll</S.Button>
+      <S.Button
+        onClick={() =>
+          onItemClick({
+            type: studentActionFieldsEnum.roll,
+            field: "",
+            order: "",
+          })
+        }
+      >
+        Start Roll
+      </S.Button>
     </S.ToolbarContainer>
   )
 }
