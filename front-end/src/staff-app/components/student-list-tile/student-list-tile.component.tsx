@@ -11,6 +11,7 @@ interface Props {
   student: Person
 }
 export const StudentListTile: React.FC<Props> = ({ isRollMode, student }) => {
+  
   return (
     <S.Container>
       <S.Avatar url={Images.avatar}></S.Avatar>
