@@ -22,9 +22,6 @@ export const HomeBoardPage: React.FC = () => {
 
   useEffect(() => {
     if (data && data.success) {
-      data.students.forEach(student=> {
-        student.roll_State = "unmark"
-      })
       context.saveStudentData(data?.students)
     }
   }, [data?.success])
@@ -36,7 +33,10 @@ export const HomeBoardPage: React.FC = () => {
   }, [])
 
   const onActiveRollAction = (action: ActiveRollAction) => {
-    if (action === "exit") setIsRollMode(false)
+    if (action === "exit") { 
+      setIsRollMode(false) 
+      context.clearRollState()
+    }
   }
 
   return (

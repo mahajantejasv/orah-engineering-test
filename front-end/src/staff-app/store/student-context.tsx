@@ -38,6 +38,7 @@ const StudentContext = React.createContext({
   saveStudentData: (students: Person[]) => {},
   handleToolbarAction: (action: ToolbarAction) => {},
   switchRollStateForStudent: (studentId: number, rollState: RolllStateType) => {},
+  clearRollState: () => {},
 })
 
 const studentReducerFn = (state: StudentStateModel = _initStudentState, action: SortActionModel): StudentStateModel => {
@@ -50,9 +51,9 @@ const studentReducerFn = (state: StudentStateModel = _initStudentState, action: 
 export const StudentContextProvider = (props: any) => {
   let students: Person[] = []
   const [studentState, studentDispatcherFn] = useReducer(studentReducerFn, _initStudentState)
-  
+
   const saveStudentData = (studentList: Person[]) => {
-    students = studentList ? studentList : []
+    students = studentList ? mapInitRollState(studentList) : []
     studentDispatcherFn({
       type: StudentActionFieldsEnum.addStudents,
       students: students,
@@ -153,7 +154,19 @@ export const StudentContextProvider = (props: any) => {
     let students = [...studentState.students]
     let index = students.findIndex((student) => student.id === studentId)
     students[index].roll_State = rollState
-    saveStudentData(students);
+    saveStudentData(students)
+  }
+
+  const clearRollState = () => {
+    let students = mapInitRollState([...studentState.students])
+    saveStudentData(students)
+  }
+
+  const mapInitRollState = (studentList: Person[]) => {
+    studentList.forEach((student) => {
+      student.roll_State = "unmark"
+    })
+    return studentList
   }
 
   return (
@@ -163,6 +176,7 @@ export const StudentContextProvider = (props: any) => {
         saveStudentData: saveStudentData,
         handleToolbarAction: handleToolbarAction,
         switchRollStateForStudent: handleSwitchRollStateForStudent,
+        clearRollState: clearRollState,
       }}
     >
       {props.children}
