@@ -11,7 +11,7 @@ interface Props {
   student: Person
 }
 export const StudentListTile: React.FC<Props> = ({ isRollMode, student }) => {
-  
+
   return (
     <S.Container>
       <S.Avatar url={Images.avatar}></S.Avatar>
@@ -20,7 +20,7 @@ export const StudentListTile: React.FC<Props> = ({ isRollMode, student }) => {
       </S.Content>
       {isRollMode && (
         <S.Roll>
-          <RollStateSwitcher />
+          <RollStateSwitcher studentId={student.id}/>
         </S.Roll>
       )}
     </S.Container>

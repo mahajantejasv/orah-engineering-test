@@ -1,5 +1,6 @@
 import React, { useReducer, useState } from "react"
 import { Person } from "shared/models/person"
+import { RolllStateType } from "shared/models/roll"
 import { ToolbarAction } from "staff-app/daily-care/home-board.page"
 
 export enum StudentActionFieldsEnum {
@@ -36,6 +37,7 @@ const StudentContext = React.createContext({
   studentState: _initStudentState,
   saveStudentData: (students: Person[]) => {},
   handleToolbarAction: (action: ToolbarAction) => {},
+  switchRollStateForStudent: (studentId: number, rollState: RolllStateType) => {},
 })
 
 const studentReducerFn = (state: StudentStateModel = _initStudentState, action: SortActionModel): StudentStateModel => {
@@ -48,20 +50,14 @@ const studentReducerFn = (state: StudentStateModel = _initStudentState, action: 
 export const StudentContextProvider = (props: any) => {
   let students: Person[] = []
   const [studentState, studentDispatcherFn] = useReducer(studentReducerFn, _initStudentState)
-  // const [studentState, studentDispatcherFn] = useState({
-  //   type: "",
-  //   students: students,
-  //   sortOrder: "",
-  //   fieldName: "",
-  // })
-
+  
   const saveStudentData = (studentList: Person[]) => {
     students = studentList ? studentList : []
     studentDispatcherFn({
       type: StudentActionFieldsEnum.addStudents,
       students: students,
-      fieldName: "",
-      sortOrder: "",
+      fieldName: studentState.fieldName,
+      sortOrder: studentState.sortOrder,
     })
   }
 
@@ -153,12 +149,20 @@ export const StudentContextProvider = (props: any) => {
     }
   }
 
+  const handleSwitchRollStateForStudent = (studentId: number, rollState: RolllStateType) => {
+    let students = [...studentState.students]
+    let index = students.findIndex((student) => student.id === studentId)
+    students[index].roll_State = rollState
+    saveStudentData(students);
+  }
+
   return (
     <StudentContext.Provider
       value={{
         studentState: studentState,
         saveStudentData: saveStudentData,
         handleToolbarAction: handleToolbarAction,
+        switchRollStateForStudent: handleSwitchRollStateForStudent,
       }}
     >
       {props.children}

@@ -22,23 +22,21 @@ export const HomeBoardPage: React.FC = () => {
 
   useEffect(() => {
     if (data && data.success) {
+      data.students.forEach(student=> {
+        student.roll_State = "unmark"
+      })
       context.saveStudentData(data?.students)
     }
   }, [data?.success])
 
   const onToolbarAction = useCallback((action: ToolbarAction) => {
-    if (action.type === StudentActionFieldsEnum.roll) {
-      setIsRollMode(true)
-    }
-    if(action.payload.field || action.payload.searchText){
-      context.handleToolbarAction(action)
-    }
+    if (action.type === StudentActionFieldsEnum.roll) setIsRollMode(true)
+
+    if (action.payload.field || action.payload.searchText) context.handleToolbarAction(action)
   }, [])
 
   const onActiveRollAction = (action: ActiveRollAction) => {
-    if (action === "exit") {
-      setIsRollMode(false)
-    }
+    if (action === "exit") setIsRollMode(false)
   }
 
   return (
@@ -199,6 +197,11 @@ const S = {
     flex-direction: column;
     width: 50%;
     margin: ${Spacing.u4} auto 140px;
+    input {
+      display: flex;
+      border-radius: ${BorderRadius.default};
+      min-height: 20px;
+    }
   `,
   ToolbarContainer: styled.div`
     display: flex;
@@ -216,10 +219,5 @@ const S = {
       font-weight: ${FontWeight.strong};
       border-radius: ${BorderRadius.default};
     }
-  `,
-  Input: styled.input`
-    display: flex;
-    border-radius: ${BorderRadius.default};
-    min-height: 20px;
   `,
 }
