@@ -152,9 +152,17 @@ export const StudentContextProvider = (props: any) => {
 
   const handleSwitchRollStateForStudent = (studentId: number, rollState: RolllStateType) => {
     let students = [...studentState.students]
-    let index = students.findIndex((student) => student.id === studentId)
-    students[index].roll_State = rollState
-    saveStudentData(students)
+    students.forEach((student) => {
+      if (student.id === studentId) student.roll_State = rollState
+    })
+    // students[index].roll_State = rollState
+    // saveStudentData(students)
+    studentDispatcherFn({
+      type: StudentActionFieldsEnum.addStudents,
+      students: students,
+      fieldName: studentState.fieldName,
+      sortOrder: studentState.sortOrder,
+    })
   }
 
   const clearRollState = () => {
