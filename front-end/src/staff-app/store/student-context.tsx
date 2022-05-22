@@ -104,7 +104,7 @@ export const StudentContextProvider = (props: any) => {
 
   const sortStudentsByFirstName = (sortOrder: string) => {
     if (sortOrder === StudentActionFieldsEnum.descendingOrder) {
-      return studentState.students.sort((a: Person, b: Person) => {
+      return students.sort((a: Person, b: Person) => {
         if (a.first_name < b.first_name) {
           return 1
         }
@@ -114,7 +114,7 @@ export const StudentContextProvider = (props: any) => {
         return 0
       })
     } else {
-      return studentState.students.sort((a: Person, b: Person) => {
+      return students.sort((a: Person, b: Person) => {
         if (a.first_name < b.first_name) {
           return -1
         }
@@ -128,7 +128,7 @@ export const StudentContextProvider = (props: any) => {
 
   const sortStudentByLastName = (sortOrder: string) => {
     if (sortOrder === StudentActionFieldsEnum.descendingOrder) {
-      return studentState.students.sort((a: Person, b: Person) => {
+      return students.sort((a: Person, b: Person) => {
         if (a.last_name < b.last_name) {
           return 1
         }
@@ -138,7 +138,7 @@ export const StudentContextProvider = (props: any) => {
         return 0
       })
     } else {
-      return studentState.students.sort((a: Person, b: Person) => {
+      return students.sort((a: Person, b: Person) => {
         if (a.last_name < b.last_name) {
           return -1
         }
@@ -151,13 +151,13 @@ export const StudentContextProvider = (props: any) => {
   }
 
   const handleSwitchRollStateForStudent = (studentId: number, rollState: RolllStateType) => {
-    let students = [...studentState.students]
-    students.forEach((student) => {
+    let studentsData = [...studentState.students]
+    studentsData.forEach((student) => {
       if (student.id === studentId) student.roll_State = rollState
     })
     studentDispatcherFn({
       type: StudentActionFieldsEnum.addStudents,
-      students: students,
+      students: studentsData,
       fieldName: studentState.fieldName,
       sortOrder: studentState.sortOrder,
     })
