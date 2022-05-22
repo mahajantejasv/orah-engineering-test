@@ -155,8 +155,6 @@ export const StudentContextProvider = (props: any) => {
     students.forEach((student) => {
       if (student.id === studentId) student.roll_State = rollState
     })
-    // students[index].roll_State = rollState
-    // saveStudentData(students)
     studentDispatcherFn({
       type: StudentActionFieldsEnum.addStudents,
       students: students,

@@ -29,7 +29,8 @@ export const HomeBoardPage: React.FC = () => {
   const onToolbarAction = useCallback((action: ToolbarAction) => {
     if (action.type === StudentActionFieldsEnum.roll) setIsRollMode(true)
 
-    if (action.payload.field || action.payload.searchText) context.handleToolbarAction(action)
+    if ((action.type === StudentActionFieldsEnum.search) || 
+    (action.type === StudentActionFieldsEnum.sort)) context.handleToolbarAction(action)
   }, [])
 
   const onActiveRollAction = (action: ActiveRollAction) => {
