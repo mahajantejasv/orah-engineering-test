@@ -155,6 +155,12 @@ export const StudentContextProvider = (props: any) => {
     studentsData.forEach((student) => {
       if (student.id === studentId) student.roll_State = rollState
     })
+    studentsData.sort((a: Person, b: Person) => {
+      if (a.roll_State === b.roll_State) {
+        return -1
+      }
+      return 0
+    })
     studentDispatcherFn({
       type: StudentActionFieldsEnum.addStudents,
       students: studentsData,
