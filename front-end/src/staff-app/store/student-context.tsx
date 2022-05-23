@@ -1,6 +1,7 @@
 import React, { useReducer, useState } from "react"
 import { Person } from "shared/models/person"
 import { RolllStateType } from "shared/models/roll"
+import { RollStateList } from "staff-app/components/roll-state/roll-state-list.component"
 import { ToolbarAction } from "staff-app/daily-care/home-board.page"
 
 export enum StudentActionFieldsEnum {
@@ -155,9 +156,12 @@ export const StudentContextProvider = (props: any) => {
     studentsData.forEach((student) => {
       if (student.id === studentId) student.roll_State = rollState
     })
-    studentsData.sort((a: Person, b: Person) => {
-      if (a.roll_State === b.roll_State) {
+    studentsData.sort((a: Person, b: Person) => {    
+      if (a.roll_State < b.roll_State) {
         return -1
+      }
+      if (a.roll_State > b.roll_State) {
+        return 1
       }
       return 0
     })
