@@ -154,13 +154,13 @@ export const StudentContextProvider = (props: any) => {
   const handleSwitchRollStateForStudent = (studentId: number, rollState: RolllStateType) => {
     let studentsData = [...studentState.students]
     studentsData.forEach((student) => {
-      if (student.id === studentId) student.roll_State = rollState
+      if (student.id === studentId) student.roll_state = rollState
     })
     studentsData.sort((a: Person, b: Person) => {    
-      if (a.roll_State < b.roll_State) {
+      if (a.roll_state < b.roll_state) {
         return -1
       }
-      if (a.roll_State > b.roll_State) {
+      if (a.roll_state > b.roll_state) {
         return 1
       }
       return 0
@@ -180,7 +180,7 @@ export const StudentContextProvider = (props: any) => {
 
   const mapInitRollState = (studentList: Person[]) => {
     studentList.forEach((student) => {
-      student.roll_State = "unmark"
+      student.roll_state = "unmark"
     })
     return studentList
   }

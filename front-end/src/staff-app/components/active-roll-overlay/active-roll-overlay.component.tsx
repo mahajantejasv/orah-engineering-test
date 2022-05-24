@@ -22,9 +22,9 @@ export const ActiveRollOverlay: React.FC<Props> = (props) => {
           <RollStateList
             stateList={[
               { type: "all", count: context.studentState.students.length },
-              { type: "present", count: context.studentState.students.filter(student=> student.roll_State === "present").length },
-              { type: "late", count: context.studentState.students.filter(student=> student.roll_State === "late").length },
-              { type: "absent", count: context.studentState.students.filter(student=> student.roll_State === "absent").length },
+              { type: "present", count: context.studentState.students.filter(student=> student.roll_state === "present").length },
+              { type: "late", count: context.studentState.students.filter(student=> student.roll_state === "late").length },
+              { type: "absent", count: context.studentState.students.filter(student=> student.roll_state === "absent").length },
             ]}
           />
           <div style={{ marginTop: Spacing.u6 }}>

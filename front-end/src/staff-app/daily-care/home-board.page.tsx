@@ -15,6 +15,7 @@ export const HomeBoardPage: React.FC = () => {
   const context = useContext(StudentContext)
   const [isRollMode, setIsRollMode] = useState(false)
   const [getStudents, data, loadState] = useApi<{ success: boolean; students: Person[] }>({ url: "get-homeboard-students" })
+  const [saveStudentsRoll, rollData, loadRollState] = useApi<{ success: boolean; students: Person[] }>({ url: "save-roll" })
 
   useEffect(() => {
     void getStudents()
@@ -29,13 +30,22 @@ export const HomeBoardPage: React.FC = () => {
   const onToolbarAction = useCallback((action: ToolbarAction) => {
     if (action.type === StudentActionFieldsEnum.roll) setIsRollMode(true)
 
-    if ((action.type === StudentActionFieldsEnum.search) || 
-    (action.type === StudentActionFieldsEnum.sort)) context.handleToolbarAction(action)
+    if (action.type === StudentActionFieldsEnum.search || action.type === StudentActionFieldsEnum.sort) context.handleToolbarAction(action)
   }, [])
 
   const onActiveRollAction = (action: ActiveRollAction) => {
-    if (action === "exit") { 
-      setIsRollMode(false) 
+    if (action === "exit") {
+      setIsRollMode(false)
+      saveStudentsRoll({
+        student_roll_states: context.studentState.students.map((student) =>{
+          return  {
+            student_id: student.id,
+            first_name: student.first_name,
+            last_name: student.last_name,
+            roll_state: student.roll_state
+          }
+        } ),
+      })
       context.clearRollState()
     }
   }

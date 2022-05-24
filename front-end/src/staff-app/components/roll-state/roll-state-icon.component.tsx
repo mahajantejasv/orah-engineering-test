@@ -13,7 +13,9 @@ interface Props {
 export const RollStateIcon: React.FC<Props> = (props) => {
   const { type, size = 20, onClick } = props
   return (
-    <S.Icon size={size} border={type === "unmark"} bgColor={getBgColor(type)} clickable={Boolean(onClick)} onClick={onClick}>
+    <S.Icon size={size} border={type === "unmark"} 
+      bgColor={getBgColor(type)} 
+      clickable={Boolean(onClick)} onClick={onClick}>
       <FontAwesomeIcon icon="check" size={size > 14 ? "lg" : "sm"} />
     </S.Icon>
   )

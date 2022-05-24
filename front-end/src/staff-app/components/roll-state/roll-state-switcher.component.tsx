@@ -8,10 +8,13 @@ interface Props {
   size?: number
   studentId: number
   onStateChange?: (newState: RolllStateType) => void
+  isReadOnly? : boolean
 }
-export const RollStateSwitcher: React.FC<Props> = ({ initialState = "unmark", size = 40,studentId, onStateChange }) => {
+export const RollStateSwitcher: React.FC<Props> = ({ size = 40,studentId, onStateChange, isReadOnly= false, initialState}) => {
+
+
   const context = useContext(StudentContext)
-  const [rollState, setRollState] = useState(initialState)
+  const [rollState, setRollState] = useState(initialState ? initialState : "unmark")
 
   const nextState = () => {
     const states: RolllStateType[] = ["present", "late", "absent"]
@@ -21,11 +24,15 @@ export const RollStateSwitcher: React.FC<Props> = ({ initialState = "unmark", si
   }
 
   const onClick = () => {
-    const next = nextState()
-    setRollState(next)
-    if (onStateChange) onStateChange(next)
-    context.switchRollStateForStudent(studentId, next)
+    if(!isReadOnly) {
+      const next = nextState()
+      setRollState(next)
+      if (onStateChange) onStateChange(next)
+      context.switchRollStateForStudent(studentId, next)
+    }
   }
+
+
 
   return <RollStateIcon type={rollState} size={size} onClick={onClick} />
 }
