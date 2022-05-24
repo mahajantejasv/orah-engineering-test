@@ -6,8 +6,10 @@ import { Roll, RollInput } from "shared/models/roll"
 export async function saveActiveRoll(roll: RollInput): Promise<ApiResponse<{}>> {
   try {
     const rollsInStorage = get<Roll[]>(LocalStorageKey.rolls)
-    const newRollId = rollsInStorage !== undefined ? rollsInStorage[rollsInStorage.length - 1].id + 1 : 1
-    const rollsToSave = rollsInStorage !== undefined ? [...rollsInStorage, createRoll(newRollId, roll)] : [createRoll(newRollId, roll)]
+    const newRollId = rollsInStorage !== undefined ? 
+    rollsInStorage[rollsInStorage.length - 1].id + 1 : 1
+    const rollsToSave = rollsInStorage !== undefined ? 
+    [...rollsInStorage, createRoll(newRollId, roll)] : [createRoll(newRollId, roll)]
     add(LocalStorageKey.rolls, rollsToSave)
 
     await httpMock({ randomFailure: true })
