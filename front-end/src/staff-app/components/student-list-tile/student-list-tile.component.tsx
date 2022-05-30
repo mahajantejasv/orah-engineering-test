@@ -12,7 +12,6 @@ interface Props {
   isReadOnly?: boolean
 }
 export const StudentListTile: React.FC<Props> = ({ isRollMode, student, isReadOnly }) => {
-  console.log(student)
   return (
     <S.Container>
       <S.Avatar url={Images.avatar}></S.Avatar>

@@ -16,9 +16,6 @@ export const ActivityPage: React.FC = () => {
     void getStudents()
   }, [getStudents])
 
-  useEffect(() => {
-    if (loadState === "loaded") console.log(data)
-  }, [loadState])
 
   return (
     <S.PageContainer>
